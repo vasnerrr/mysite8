@@ -945,7 +945,7 @@ async function loadBoard(force){
       + (r.me && r.me.place>top.length ? `<div class="br me"><span class="pl">${r.me.place}</span><span class="nm">Вы</span><span class="sc">${r.me.score}</span></div>` : "")
       : `<div class="empty" style="padding:14px">Пока никто не играл — станьте первым!</div>`;
     $("board-note").textContent = r.demo ? "Общий рейтинг работает, когда приложение открыто в Telegram" : "В рейтинг попадает лучший результат каждого игрока";
-  } catch(e){ $("board").innerHTML=`<div class="empty" style="padding:14px">Не удалось загрузить рейтинг</div>`; }
+  } catch(e){ $("board").innerHTML=`<div class="empty" style="padding:14px">Не удалось загрузить рейтинг<br><small>${esc(e.message||e)}</small></div>`; }
 }
 const LOGO_R_SRC = (document.querySelector(".brand-b img")||{}).src || "";
 badge(); renderPromos(); loadProfile();
