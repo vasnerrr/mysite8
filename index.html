@@ -257,6 +257,15 @@ textarea.in{padding:14px;min-height:90px;resize:none}
 s.old{color:var(--mut);font-weight:600;margin-right:6px}
 .spin{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+.board{margin:0 16px;background:#fff;border-radius:20px;box-shadow:var(--sh);padding:4px 14px}
+.br{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.br:last-child{border:0}
+.br .pl{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;background:var(--soft);color:var(--w);flex:none}
+.br.p1 .pl{background:#D4A017;color:#fff}.br.p2 .pl{background:#A8A8A8;color:#fff}.br.p3 .pl{background:#B87333;color:#fff}
+.br .nm{flex:1;min-width:0;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.br .sc{font-weight:800;color:var(--w)}
+.br.me{background:var(--soft);margin:0 -14px;padding:11px 14px;border-radius:12px}
+.bnote{margin:8px 20px 0;font-size:12px;color:var(--mut);text-align:center}
 </style>
 </head>
 <body>
@@ -271,7 +280,7 @@ s.old{color:var(--mut);font-weight:600;margin-right:6px}
 
 <!-- ГЛАВНАЯ -->
 <section class="scr on" id="s-home">
-  <div class="top"><button class="ib" aria-label="Закрыть" onclick="closeApp()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><h1>Курсак<small>мини-приложение</small></h1><button class="ib" aria-label="Ещё" onclick="go('about')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button></div>
+  <div class="top"><button class="ib" aria-label="Закрыть" onclick="closeApp()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span style="flex:1"></span><button class="ib" aria-label="Ещё" onclick="go('about')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button></div>
   <div class="hero">
     <div class="blob"></div><svg class="books" viewBox="0 0 200 230" aria-hidden="true">
 <defs>
@@ -454,6 +463,9 @@ s.old{color:var(--mut);font-weight:600;margin-right:6px}
   <div class="legend">
     <span><i class="lg5">5</i>+5</span><span><i class="lg4">4</i>+3</span><span><i class="lgb"></i>+1</span><span><i class="lgc"></i>замедление</span><span><i class="lg2">2</i>−жизнь</span>
   </div>
+  <div class="sh"><b>Рейтинг игроков</b><button onclick="loadBoard(true)">Обновить</button></div>
+  <div class="board" id="board"><div class="empty" style="padding:14px">Загрузка…</div></div>
+  <p class="bnote" id="board-note"></p>
 </section>
 
 <!-- ДРУЗЬЯ / РЕФЕРАЛЫ -->
@@ -504,7 +516,7 @@ s.old{color:var(--mut);font-weight:600;margin-right:6px}
 const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbyWtrO0rpRnYlv6D2Xs5eVng2SG6zqtjr71WIqeM44-lGlckf-UYWu6Q8CCwdaV9Ifq/exec", // веб-приложение Apps Script (пусто = демо-режим)
   BOT: "kursackbot",
-  APP_LINK: "https://t.me/kursackbot?startapp=",  // реферальная ссылка = APP_LINK + "ref_" + id
+  APP_LINK: "https://t.me/kursackbot?start=",     // реферальная ссылка = APP_LINK + "ref_" + id (через бота — друг сразу подписывается)
   REF_STEP: 3,                        // % за одного друга
   REF_MAX: 50,                        // максимум скидки за друзей
   MAX_TOTAL_DISCOUNT: 50,             // максимум суммарной скидки по всем промокодам в заказе
@@ -729,6 +741,8 @@ async function demoApi(action, d){
     return {ok:true, no:String(Date.now()).slice(-5)};
   }
   if (action==="myOrders") return {ok:true, orders:null};
+  if (action==="submitScore") return {ok:true};
+  if (action==="leaderboard"){ const best=GM.best||0; const nm=(user&&user.first_name)||"Вы"; return {ok:true, demo:true, top: best?[{name:nm, score:best, me:true}]:[], me: best?{place:1, score:best}:null}; }
   throw new Error("Неизвестное действие");
 }
 
@@ -830,7 +844,7 @@ function gameStart(){
 function gamePause(){ if(GM.run){ GM.run=false; gameCard("pause"); } }
 function gameResume(){ $("g-ov").hidden=true; GM.run=true; GM.last=performance.now(); requestAnimationFrame(loop); }
 function gameOver(){
-  GM.run=false; GM.over=true; if(GM.score>GM.best){ GM.best=GM.score; try{ localStorage.setItem("kursak_game_best",GM.best); }catch(e){} }
+  GM.run=false; GM.over=true; submitScore(GM.score, GM.t); if(GM.score>GM.best){ GM.best=GM.score; try{ localStorage.setItem("kursak_game_best",GM.best); }catch(e){} }
   hud(); try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("error"); } catch(e){}
   gameCard("over");
 }
@@ -918,10 +932,31 @@ function draw(py,pw){
   window.addEventListener("keydown",e=>{ if(!GM.run) return; if(e.key==="ArrowLeft") GM.tx=Math.max(39,GM.tx-60); if(e.key==="ArrowRight") GM.tx=Math.min(GM.w-39,GM.tx+60); });
   window.addEventListener("resize",()=>{ if($("s-game").classList.contains("on")) { gameSize(); if(!GM.run) draw(GM.h-46,78); } });
 })();
-function gameEnter(){ gameSize(); hud(); if(!GM.run){ if(GM.over) gameCard("over"); else if(GM.started) gameCard("pause"); else gameCard("start"); draw(GM.h-46,78); } }
+function gameEnter(){ gameSize(); hud(); loadBoard(); if(!GM.run){ if(GM.over) gameCard("over"); else if(GM.started) gameCard("pause"); else gameCard("start"); draw(GM.h-46,78); } }
 
+/* ----- рейтинг игроков ----- */
+let boardLoaded=0;
+async function submitScore(score, secs){ if(!score) return; try { await api("submitScore",{score, secs:Math.round(secs)}); } catch(e){} loadBoard(true); }
+async function loadBoard(force){
+  if (!force && Date.now()-boardLoaded<30000) return; boardLoaded=Date.now();
+  try {
+    const r=await api("leaderboard"); const top=r.top||[];
+    $("board").innerHTML = top.length ? top.map((p,i)=>`<div class="br p${i+1} ${p.me?"me":""}"><span class="pl">${i+1}</span><span class="nm">${esc(p.name)}${p.me&&p.name!=="Вы"?" (вы)":""}</span><span class="sc">${p.score}</span></div>`).join("")
+      + (r.me && r.me.place>top.length ? `<div class="br me"><span class="pl">${r.me.place}</span><span class="nm">Вы</span><span class="sc">${r.me.score}</span></div>` : "")
+      : `<div class="empty" style="padding:14px">Пока никто не играл — станьте первым!</div>`;
+    $("board-note").textContent = r.demo ? "Общий рейтинг работает, когда приложение открыто в Telegram" : "В рейтинг попадает лучший результат каждого игрока";
+  } catch(e){ $("board").innerHTML=`<div class="empty" style="padding:14px">Не удалось загрузить рейтинг</div>`; }
+}
 const LOGO_R_SRC = (document.querySelector(".brand-b img")||{}).src || "";
 badge(); renderPromos(); loadProfile();
+/* разрешение боту писать пользователю (для уведомлений и рассылок) — спрашиваем один раз */
+(function askWrite(){
+  try {
+    if (DEMO || !user || user.allows_write_to_pm || !tg.requestWriteAccess) return;
+    if (localStorage.getItem("kursak_wa_asked")) return; localStorage.setItem("kursak_wa_asked","1");
+    setTimeout(()=>tg.requestWriteAccess(ok=>{ api("writeAccess",{granted:!!ok}).catch(()=>{}); }), 2500);
+  } catch(e){}
+})();
 </script>
 </body>
 </html>
