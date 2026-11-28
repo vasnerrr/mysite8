@@ -432,7 +432,7 @@ s.old{color:var(--mut);font-weight:600;margin-right:6px}
 <section class="scr" id="s-services">
   <div class="top"><button class="ib" aria-label="Назад" onclick="back()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><h1>Услуги</h1><button class="ib" aria-label="Поддержка" onclick="tab('support')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></svg></button></div>
   <div class="chips" id="chips"></div>
-  <p class="bnote" style="margin:0 20px 12px;text-align:left">Цены ориентировочные. Точную стоимость назовёт менеджер в личке.</p>
+  <p class="bnote" style="margin:0 20px 12px;text-align:left">Цена у каждой работы своя. Её рассчитает менеджер @kursack_mng после заявки.</p>
   <div class="list" id="svc-list"></div>
 </section>
 
@@ -658,20 +658,20 @@ const CONFIG = {
 };
 
 const S = [
-  {id:"course",cat:"big",ico:"cap",name:"Курсовые и дипломные работы",price:8000,home:1},
-  {id:"bach",cat:"big",ico:"trophy",name:"Бакалаврская работа",price:50000,home:1},
-  {id:"mag",cat:"big",ico:"star",name:"Магистерская диссертация",price:60000,home:1},
-  {id:"orig",cat:"help",ico:"up",name:"Поднятие уникальности",price:3000},
-  {id:"article",cat:"text",ico:"doc",name:"Статья",price:5000},
-  {id:"ref",cat:"text",ico:"book",name:"Реферат",price:5000},
-  {id:"essay",cat:"text",ico:"pen",name:"Эссе",price:1500},
-  {id:"pres",cat:"design",ico:"slides",name:"Презентации",price:800,home:1},
-  {id:"speech",cat:"text",ico:"mic",name:"Речь на защиту",price:500},
+  {id:"course",cat:"big",ico:"cap",name:"Курсовые и дипломные работы",price:null,home:1},
+  {id:"bach",cat:"big",ico:"trophy",name:"Бакалаврская работа",price:null,home:1},
+  {id:"mag",cat:"big",ico:"star",name:"Магистерская диссертация",price:null,home:1},
+  {id:"orig",cat:"help",ico:"up",name:"Поднятие уникальности",price:null},
+  {id:"article",cat:"text",ico:"doc",name:"Статья",price:null},
+  {id:"ref",cat:"text",ico:"book",name:"Реферат",price:null},
+  {id:"essay",cat:"text",ico:"pen",name:"Эссе",price:null},
+  {id:"pres",cat:"design",ico:"slides",name:"Презентации",price:null,home:1},
+  {id:"speech",cat:"text",ico:"mic",name:"Речь на защиту",price:null},
   {id:"info",cat:"design",ico:"chart",name:"Инфографика и визуализация",price:null},
   {id:"edit",cat:"help",ico:"check",name:"Редактура и корректура текстов",price:null},
-  {id:"gost",cat:"design",ico:"ruler",name:"Оформление документов по ГОСТ",price:1000},
-  {id:"conspect",cat:"text",ico:"notes",name:"Конспекты и учебные материалы",price:500},
-  {id:"calc",cat:"design",ico:"table",name:"Таблицы, графики и расчёты",price:500},
+  {id:"gost",cat:"design",ico:"ruler",name:"Оформление документов по ГОСТ",price:null},
+  {id:"conspect",cat:"text",ico:"notes",name:"Конспекты и учебные материалы",price:null},
+  {id:"calc",cat:"design",ico:"table",name:"Таблицы, графики и расчёты",price:null},
   {id:"tutor",cat:"help",ico:"user",name:"Репетиторство и консультации",price:null},
   {id:"fix",cat:"help",ico:"fix",name:"Исправление чужой работы",price:null},
   {id:"other",cat:"help",ico:"other",name:"Другое",price:null,home:1,label:"опишите задачу"}
@@ -688,7 +688,7 @@ if (user && user.first_name) document.getElementById("uname").textContent = user
 
 /* ===== helpers ===== */
 const $ = id => document.getElementById(id);
-const fmt = p => p==null ? "договорная" : "от " + p.toLocaleString("ru-RU") + " ₽";
+const fmt = p => "цена у менеджера";
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let store=[]; try { store = JSON.parse(localStorage.getItem("kursak_orders_v2")||"[]"); } catch(e){}
 const save = () => { try { localStorage.setItem("kursak_orders_v2", JSON.stringify(store)); } catch(e){} };
